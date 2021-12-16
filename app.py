@@ -9,12 +9,9 @@ os.environ["NUMEXPR_NUM_THREADS"] = "1"
 import sys
 sys.path.insert(0, './detection_module')
 
-from detection_module.models.experimental import attempt_load
-from detection_module.utils.downloads import attempt_download
+
 from detection_module.models.common import DetectMultiBackend
-from detection_module.utils.datasets import LoadImages, LoadStreams
-from detection_module.utils.general import LOGGER, check_img_size, non_max_suppression, scale_coords, check_imshow, xyxy2xywh
-from detection_module.utils.torch_utils import select_device, time_sync
+from detection_module.utils.general import non_max_suppression, scale_coords, xyxy2xywh
 from detection_module.utils.plots import Annotator, colors
 from tracking_module.utils.parser import get_config
 from tracking_module.deep_sort import DeepSort
@@ -30,7 +27,8 @@ import torch.backends.cudnn as cudnn
 import numpy as np
 import streamlit as st
 import tempfile
-
+from google_drive_downloader import GoogleDriveDownloader as gdd
+import os
 class_label = ['person', 'head']
 
 # class_label = ["nguoi", "xe dap", "o to", "xe may", "may bay", "xe buyt", "tau hoa", "xe tai", "thuyen", "den giao thong",
@@ -87,7 +85,7 @@ def predict(model, deepsort_model,img):
         image = np.expand_dims(image, 0)
 
         #image = torch.from_numpy(image)
-        image = torch.from_numpy(image).cuda()
+        image = torch.from_numpy(image)
 
         #print("shape tensor image:", image.shape)
           
@@ -143,10 +141,27 @@ def predict(model, deepsort_model,img):
 if __name__ == "__main__":
 
     st.header("Phan Minh Toan @Real-Time Detection & Tracking")
-    deepsort = DeepSort(model_path='./tracking_module/deep_sort/deep/checkpoint/ckpt.t7', use_cuda=True)
 
-    #model = DetectMultiBackend(weights = 'crowdhuman_yolov5m.pt')
-    model = DetectMultiBackend(weights = 'yolov5n.pt', device = 'cuda:0')
+    if (not os.path.exists('./yolov5n.pt')):
+        with st.spinner(text="Download detection model in progress..."):
+            gdd.download_file_from_google_drive(file_id='1V5hUspqnI6uvBIPyccga9lsz8-fWFQ9p',
+                                    dest_path='./yolov5n.pt')
+
+    if (not os.path.exists('./ckpt.t7')):
+        with st.spinner(text="Download tracking model in progress..."):
+            gdd.download_file_from_google_drive(file_id='1GJpFNw0fU-6X1z8_x_Mb7f5A9pRtLZt_',
+                                    dest_path='./ckpt.t7')
+
+    if (not os.path.exists('./crowdhuman_yolov5m.pt')):
+        with st.spinner(text="Download tracking model in progress..."):
+            gdd.download_file_from_google_drive(file_id='1Bz_tZia6BeAy7PW1LJm5x8469D0ooDtQ',
+                                    dest_path='./crowdhuman_yolov5m.pt')
+
+
+    deepsort = DeepSort(model_path='ckpt.t7', use_cuda=False)
+
+    #model = DetectMultiBackend(weights = 'crowdhuman_yolov5m.pt', device='cpu')
+    model = DetectMultiBackend(weights = 'yolov5n.pt', device = 'cpu')
     
     uploaded_file = st.file_uploader("Upload file")
     tfile = tempfile.NamedTemporaryFile(delete=False) 
@@ -171,7 +186,7 @@ if __name__ == "__main__":
 
   
 # # define a video capture object
-# vid = cv2.VideoCapture('video3.mp4')
+# vid = cv2.VideoCapture(0)
   
 # while(True):
       
