@@ -161,7 +161,7 @@ if __name__ == "__main__":
     deepsort = DeepSort(model_path='ckpt.t7', use_cuda=False)
 
     #model = DetectMultiBackend(weights = 'crowdhuman_yolov5m.pt', device='cpu')
-    model = DetectMultiBackend(weights = 'yolov5n.pt', device = 'cpu')
+    model = DetectMultiBackend(weights = 'crowdhuman_yolov5m.pt', device = 'cpu')
     
     uploaded_file = st.file_uploader("Upload file")
     tfile = tempfile.NamedTemporaryFile(delete=False) 
